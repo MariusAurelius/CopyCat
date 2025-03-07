@@ -19,6 +19,8 @@ When categories are added, deleted, or modified in the template, all records in 
 Each time the program is launched, a message detailing how to use the program is shown.
 
 
+
+
 # [FR] CopyCat - Gestionnaire Dynamique de Fichiers RTF
 CopyCat est une application Python basée sur Tkinter pour gérer des fichiers RTF en modifiant une fiche modèle.
 
