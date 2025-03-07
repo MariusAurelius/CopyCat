@@ -6,7 +6,7 @@ import re
 
 base_dir = os.path.dirname(__file__)
 file_path_fiche_modele = os.path.join(base_dir, './fiche_modele.rtf')
-file_path_exemplaires = os.path.join(base_dir, './exemplaires')
+file_path_exemplaires = os.path.join(base_dir, './exemplaires') # changer exemplaires au nom de dossier dont vous souhaitez
 
 # def get_folder_path(folder_name):
 #     return os.path.join(base_dir, folder_name)
@@ -19,7 +19,7 @@ class App:
         self.user_input = ""
         self.user_input_list = []  # List to track user-typed characters
         self.contenu_fiche_modele_avant = []
-        self.folder_name = "exemplaires"  # Default folder name which you can change by editing this variable
+        self.folder_name = "exemplaires"  # Default folder name which you can change by editing this variable: pas encore implemente
         self.create_widgets()
         self.display_initial_messages()
 
@@ -40,8 +40,7 @@ class App:
             "Voici les règles à suivre pour éviter des problèmes:\n#1: 2 COMPETENCES DE LA FICHE MODELE NE DOIVENT PAS AVOIR LE MEME NOM, SINON CELA CHANGERA LA VALEUR ASSOCIEE DANS LA FICHE EXEMPLAIRE.\n\n",
             "#2: LORS DE L'AJOUT D'UNE COMPETENCE, BIEN METTRE UN DOUBLE-POINT : APRES LA COMPETENCE. NE PAS EN AVOIR PLUSIEURS DANS LA MEME LIGNE.\n\n",
             "#3: POUR QUE LES MODIFICATIONS DE LA FICHE MODELE PRENNENT EFFET SUR LES FICHES EXEMPLAIRE, SAUVEGARDER ET FERMER LA FENETRE DE CELLE-CI DANS L'EDITEUR DE TEXTE (Pages, Word...). TANT QUE L'EDITEUR DE TEXTE N'A PAS ETE FERME, LA BOITE DE DIALOGUE SERA FIGEE. UNE FOIS L'EDITEUR FERME, LES FICHES EXEMPLAIRE MODIFIEES SERONT ANNONCEES DANS LA BOITE DE DIALOGUE.\n\n",
-            "#4: SI TU CHANGES LE NOM OU PRENOM D'UN EXEMPLAIRE, BIEN CHANGER AUSSI SON NOM DE FICHIER prenom_nom, POUR POUVOIR UTILISER LA FONCTIONNALITE 3 (Modifier une fiche exemplaire).\n\n",
-            "#5: SI LA FONCTIONNALITE 3 NE MARCHE PAS, VERIFIE QU'IL N'Y A PAS D'ACCENTS DANS LE NOM DU FICHIER, CELA POURRAIT PEUT-ETRE ETRE LE PROBLEME.\n\n",
+            "#4: SI LA FONCTIONNALITE 3 NE MARCHE PAS, VERIFIE QU'IL N'Y A PAS D'ACCENTS DANS LE NOM DU FICHIER, CELA POURRAIT PEUT-ETRE ETRE LE PROBLEME.\n\n",
 
             "\nBonjour, que voulez-vous faire ? Tapez le nombre indiqué puis Entrée pour procéder ...\n",
             "1: Modifier la Fiche Modèle\n",
@@ -57,7 +56,7 @@ class App:
 
     def display_action_messages(self):
         messages = [
-            "\n\nBonjour, que voulez-vous faire ? Tapez le nombre indiqué puis Entrée pour procéder ...\n",
+            "\n\nQue voulez-vous faire ? Tapez le nombre indiqué puis Entrée pour procéder ...\n",
             "1: Modifier la Fiche Modèle\n",
             "2: Ajouter une fiche exemplaire\n",
             "3: Modifier une fiche exemplaire\n",
@@ -154,7 +153,7 @@ class App:
             
         if self.contenu_fiche_modele_avant != contenu_fiche_modele_apres: # if changes have been made . ADD: MAYBE contenu_fiche_modele_apres IN SELF
             with os.scandir(file_path_exemplaires) as directory:
-                for student in directory:
+                for record in directory:
 
                     contenu_fiche_modele_apres_2 = []
                     for compteur in range(len(contenu_fiche_modele_apres)):
@@ -164,49 +163,49 @@ class App:
                     # print(contenu_fiche_modele_apres_2) # all categories without ":" in fiche modele, WORKS
                     # print('\n')
 
-                    with open(student, 'r', encoding='latin-1') as fiche_exemplaire:   # ..., int, encoding=utf_8
+                    with open(record, 'r', encoding='latin-1') as fiche_exemplaire:   # ..., int, encoding=utf_8
                         contenu_fiche_exemplaire = fiche_exemplaire.read().splitlines() # list of all the lines
 
-                    contenu_fiche_exemplaire_2 = [] # list of all the lists, representing lines of student file, with 2 values: Category and Value given after ":"
+                    contenu_fiche_exemplaire_2 = [] # list of all the lists, representing lines of record file, with 2 values: Category and Value given after ":"
 
                     for compteur in range(len(contenu_fiche_exemplaire)):
                         liste_ligne_cle_valeur = contenu_fiche_exemplaire[compteur].rsplit(":", maxsplit=1) # list with 2 values: Category and Value given after ":"
                         contenu_fiche_exemplaire_2.append(liste_ligne_cle_valeur)
 
-                    list_student_keys = []
-                    list_student_values = []
+                    list_record_keys = []
+                    list_record_values = []
                     for compteur_2 in range(len(contenu_fiche_exemplaire_2)):
-                        list_student_keys.append(contenu_fiche_exemplaire_2[compteur_2][0])
+                        list_record_keys.append(contenu_fiche_exemplaire_2[compteur_2][0])
 
                         if len(contenu_fiche_exemplaire_2[compteur_2]) == 2:    # so no IndexError on empty lines with no ":"
-                            list_student_values.append(contenu_fiche_exemplaire_2[compteur_2][1])
+                            list_record_values.append(contenu_fiche_exemplaire_2[compteur_2][1])
                         else:
-                            list_student_values.append(contenu_fiche_exemplaire_2[compteur_2][0])
+                            list_record_values.append(contenu_fiche_exemplaire_2[compteur_2][0])
                     
-                    # print(list_student_keys, list_student_values) # works
+                    # print(list_record_keys, list_record_values) # works
                     # print('\n')
 
-                    final_student_list = [] # list of lines to rewrite in student file, after all mods
+                    final_record_list = [] # list of lines to rewrite in record file, after all mods
                     index_fiche_modele = 0
-                    index_student = 0
+                    index_record = 0
                     assert len(contenu_fiche_modele_apres) == len(contenu_fiche_modele_apres_2), "HAY UNO PROBLEMO :("
                     while index_fiche_modele < len(contenu_fiche_modele_apres):
-                        if contenu_fiche_modele_apres_2[index_fiche_modele] in list_student_keys: #if not new line
-                            local_student_index = list_student_keys.index(contenu_fiche_modele_apres_2[index_fiche_modele]) #getting index of key in list of keys, which should be same as index of line in list of lines
-                            final_student_list.append(contenu_fiche_exemplaire[local_student_index])
+                        if contenu_fiche_modele_apres_2[index_fiche_modele] in list_record_keys: #if not new line
+                            local_record_index = list_record_keys.index(contenu_fiche_modele_apres_2[index_fiche_modele]) #getting index of key in list of keys, which should be same as index of line in list of lines
+                            final_record_list.append(contenu_fiche_exemplaire[local_record_index])
                             index_fiche_modele+=1
                         else:
-                            final_student_list.append(contenu_fiche_modele_apres[index_fiche_modele])
+                            final_record_list.append(contenu_fiche_modele_apres[index_fiche_modele])
                             index_fiche_modele+=1
                             
                     # print('\n')                            
-                    # print(final_student_list) 
+                    # print(final_record_list) 
                     # print('\n')
-                    with open(student, 'w', encoding='latin-1') as fiche_exemplaire:   # ..., int, encoding=utf_8
-                        for loop_index in range(len(final_student_list)):
-                            fiche_exemplaire.write(final_student_list[loop_index] + "\n")
+                    with open(record, 'w', encoding='latin-1') as fiche_exemplaire:   # ..., int, encoding=utf_8
+                        for loop_index in range(len(final_record_list)):
+                            fiche_exemplaire.write(final_record_list[loop_index] + "\n")
 
-                    self.display_message("Modifications enregistrées pour: " + student.name + "\n") #  + " (" + list_student_values[1] + list_student_values[0] + "). "
+                    self.display_message("Modifications enregistrées pour: " + record.name + "\n") #  + " (" + list_record_values[1] + list_record_values[0] + "). "
 
         else: 
             self.display_message("Pas de modifications enregistrées.")
